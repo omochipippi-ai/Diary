@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>リアル育成ゲーム - プリンセス版</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+:root{
+  --bg:#fff7fb;
+  --card:#ffffff;
+  --accent:#ff77b8;
+  --gold:#ffd36e;
+  --muted:#7a5a6a;
+  --rose:#ffe6f0;
+  --glass: rgba(255,255,255,0.8);
+}
+*{box-sizing:border-box}
+body{font-family:"Hiragino Kaku Gothic ProN","Meiryo",sans-serif;margin:0;background:linear-gradient(180deg,var(--bg),#fff);color:#2a1b2b;min-height:100vh;}
+.wrap{max-width:980px;margin:12px auto;padding:16px;display:flex;gap:14px;align-items:flex-start;}
+.left{flex:0 0 360px;background:linear-gradient(180deg,#fff,#fff8fb);border-radius:18px;padding:16px;box-shadow:0 10px 30px rgba(200,120,180,0.08);border:1px solid rgba(255,200,230,0.6)}
+.right{flex:1;}
+h1{margin:0;color:var(--accent);font-size:20px;text-shadow:0 1px 0 #fff}
+.card{background:var(--card);border-radius:12px;padding:12px;margin-bottom:12px;border:1px solid rgba(253,223,242,0.6)}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.stat{padding:10px;border-radius:10px;background:linear-gradient(180deg,#fff,#fff0fb);border:1px solid rgba(250,220,240,0.6)}
+.stat .name{font-size:13px;color:var(--muted);margin-bottom:6px}
+.stat .bar{height:14px;border-radius:8px;background:linear-gradient(90deg,#ffeef7,#fff);border:1px solid rgba(230,190,220,0.6);overflow:hidden}
+.stat .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#ffb3d9);width:0%}
+.stat .value{font-weight:700;font-size:14px;margin-top:6px;text-align:right}
+.level-badge{display:inline-block;padding:6px 10px;border-radius:999px;background:linear-gradient(90deg,#fff8e6,var(--gold));color:#5a3a1a;font-weight:800;border:1px solid #ffdca3}
+.avatar{width:140px;height:180px;border-radius:12px;background:linear-gradient(180deg,#fff,#fff0fb);display:flex;align-items:center;justify-content:center;border:1px dashed rgba(255,200,230,0.6);overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.btn{background:var(--accent);color:#fff;border:none;padding:10px 12px;border-radius:12px;cursor:pointer;font-weight:700}
+.small{background:#fff;border:1px solid rgba(255,200,230,0.8);padding:6px 8px;border-radius:10px;cursor:pointer}
+.log{height:120px;overflow:auto;padding:8px;border-radius:10px;border:1px solid rgba(250,220,240,0.6);background:linear-gradient(180deg,#fff,#fff2f8)}
+.timer-line{display:flex;gap:8px;align-items:center;margin-top:6px}
+.mission{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;border:1px solid rgba(250,220,240,0.6);margin-bottom:8px;background:linear-gradient(180deg,#fff,#fff8fb)}
+footer{margin-top:12px;color:var(--muted);font-size:13px}
+.princess-header{background:linear-gradient(90deg,#fff0f8,#fff8f0);padding:10px;border-radius:12px;border:1px solid rgba(255,220,240,0.6);display:flex;justify-content:space-between;align-items:center}
+.ribbon{background:linear-gradient(90deg,#ffdfee,#ffcce6);padding:6px 10px;border-radius:8px;border:1px solid rgba(255,200,230,0.6);font-weight:700;color:#7a3a5a}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="left">
+    <div class="princess-header">
+      <div>
+        <h1>姫の育成帳</h1>
+        <div style="font-size:13px;color:var(--muted)" id="dateBox">開始日: --</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;color:var(--muted)">Day <span id="dayCount">0</span></div>
+        <div style="margin-top:6px"><span class="level-badge" id="globalLevel">Lv1</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-weight:700">ステータス</div>
+        <div class="ribbon">お姫様ゲージ</div>
+      </div>
+      <div class="stat-grid" id="stats">
+        <div class="stat">
+          <div class="name">📘 学力</div>
+          <div class="bar"><i id="bar-study"></i></div>
+          <div class="value"><span id="val-study">0</span> / <span id="lvl-study">Lv0</span></div>
+        </div>
+        <div class="stat">
+          <div class="name">🏃 運動</div>
+          <div class="bar"><i id="bar-exercise"></i></div>
+          <div class="value"><span id="val-exercise">0</span> / <span id="lvl-exercise">Lv0</span></div>
+        </div>
+        <div class="stat">
+          <div class="name">💄 魅力</div>
+          <div class="bar"><i id="bar-charm"></i></div>
+          <div class="value"><span id="val-charm">0</span> / <span id="lvl-charm">Lv0</span></div>
+        </div>
+        <div class="stat">
+          <div class="name">👗 流行</div>
+          <div class="bar"><i id="bar-fashion"></i></div>
+          <div class="value"><span id="val-fashion">0</span> / <span id="lvl-fashion">Lv0</span></div>
+        </div>
+        <div class="stat">
+          <div class="name">🎨 芸術</div>
+          <div class="bar"><i id="bar-art"></i></div>
+          <div class="value"><span id="val-art">0</span> / <span id="lvl-art">Lv0</span></div>
+        </div>
+        <div class="stat">
+          <div class="name">✨ 気配り</div>
+          <div class="bar"><i id="bar-kind"></i></div>
+          <div class="value"><span id="val-kind">0</span> / <span id="lvl-kind">Lv0</span></div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:8px">各パラメータはゲージで確認。一定値でLvアップします。</div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:700">ミッション</div>
+      <div style="margin-top:8px">
+        <input id="missionTitle" placeholder="課題名" style="width:100%;padding:8px;border-radius:8px;border:1px solid #fde6f2"><br>
+        所要分数: <input type="number" id="missionMinutes" value="60" min="1" style="width:90px;padding:6px;border-radius:8px;border:1px solid #fde6f2">
+        <button class="btn" id="addMission">追加</button>
+      </div>
+      <div id="missionsList" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:700">キャラクター</div>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+        <div class="avatar" id="avatarBox">画像を埋め込めます</div>
+        <div>
+          <input type="file" id="avatarUpload" accept="image/*"><br>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px">AI生成しなくてもOK。画像を選ぶだけ。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:700">同期 / 保存</div>
+      <div id="lastSaved" style="color:var(--muted);font-size:13px;margin-top:6px">未保存</div>
+      <div style="margin-top:8px"><button class="small" id="exportBtn">エクスポート</button> <button class="small" id="importBtn">インポート</button> <button class="small" id="resetBtn">リセット</button></div>
+    </div>
+
+  </div>
+
+  <div class="right">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-weight:700">行動パネル</div>
+        <div style="font-size:13px;color:var(--muted)">姫の毎日を彩る</div>
+      </div>
+
+      <div style="margin-top:8px">
+        <div style="font-weight:700">勉強</div>
+        分数：<input type="number" id="studyMinutes" value="60" min="1" style="width:90px;padding:6px;border-radius:8px;border:1px solid #fde6f2">
+        <button class="btn" id="startStudy">開始</button>
+        <button class="small" id="stopStudy">停止（途中報酬）</button>
+        <button class="small" id="cancelStudy">中止（報酬なし）</button>
+        <div id="studyTimer" class="timer-line" style="margin-top:6px"></div>
+      </div>
+
+      <div style="margin-top:12px">
+        <div style="font-weight:700">運動（散歩）</div>
+        <button class="btn" id="startExercise">開始（40分）</button>
+        <button class="small" id="stopExercise">停止（途中報酬）</button>
+        <button class="small" id="cancelExercise">中止（報酬なし）</button>
+        <div id="exerciseTimer" class="timer-line" style="margin-top:6px"></div>
+      </div>
+
+      <div style="margin-top:12px">
+        <div style="display:flex;gap:8px">
+          <button class="small" id="charmAct">魅力の所作 +1</button>
+          <button class="small" id="studyCulture">教養 +1</button>
+          <button class="small" id="youtube">YouTube +1</button>
+          <button class="small" id="fashion">流行 +1</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div style="font-weight:700">ログ</div>
+        <div class="log" id="log"></div>
+      </div>
+
+      <footer>ヒント：Safariの共有メニュー → 「ホーム画面に追加」でアプリ風にできます。</footer>
+    </div>
+  </div>
+</div>
+
+<script>
+/* State */
+const DEFAULT = {
+  stats:{study:0,exercise:0,charm:0,fashion:0,art:0,kind:0},
+  startDate:null,
+  lastSaved:null,
+  unlocked:[],
+  missions:[],
+  avatarDataUrl:null,
+  timers:{}
+};
+let state = loadState();
+const logEl = document.getElementById('log');
+
+/* Storage */
+function loadState(){
+  try{
+    const raw = localStorage.getItem('rlg_princess_v1');
+    if(raw){ const s = JSON.parse(raw); return {...DEFAULT,...s, stats:{...DEFAULT.stats,...s.stats}}; }
+  }catch(e){}
+  const today = new Date().toISOString().slice(0,10);
+  const st = {...DEFAULT, startDate: today, lastSaved: new Date().toISOString()};
+  localStorage.setItem('rlg_princess_v1', JSON.stringify(st));
+  return st;
+}
+function saveState(){
+  state.lastSaved = new Date().toISOString();
+  localStorage.setItem('rlg_princess_v1', JSON.stringify(state));
+  document.getElementById('lastSaved').textContent = '最終保存: '+ new Date(state.lastSaved).toLocaleString();
+}
+
+/* UI */
+function updateUI(){
+  document.getElementById('dateBox').textContent = '開始日: '+ state.startDate;
+  document.getElementById('dayCount').textContent = dayCount();
+  // update numeric values and bars
+  const keys = ['study','exercise','charm','fashion','art','kind'];
+  keys.forEach(k=>{
+    const val = state.stats[k] || 0;
+    document.getElementById('val-'+k).textContent = Math.round(val*10)/10;
+    const percent = Math.min(100, Math.round((val % 100) )); // show within 0-100 for visual
+    const bar = document.getElementById('bar-'+k);
+    bar.style.width = percent + '%';
+    // level based on thresholds: every 10 points = level up
+    const lvl = Math.floor(val/10);
+    document.getElementById('lvl-'+k).textContent = 'Lv'+lvl;
+    document.getElementById('globalLevel').textContent = 'Lv'+Math.max(1, Math.floor((state.stats.study + state.stats.exercise + state.stats.charm + state.stats.fashion + state.stats.art + state.stats.kind)/60)+1);
+  });
+  renderMissions();
+  renderAvatar();
+  updateTimersUI();
+}
+function dayCount(){
+  const s = new Date(state.startDate+'T00:00:00');
+  return Math.floor((new Date() - s)/(1000*60*60*24))+1;
+}
+function log(msg){
+  const t = new Date().toLocaleTimeString();
+  logEl.innerHTML = `<div>[${t}] ${msg}</div>` + logEl.innerHTML;
+}
+
+/* Stats change and level-up effect */
+function addStat(key, amount, note){
+  if(!state.stats.hasOwnProperty(key)) return;
+  state.stats[key] = Math.round((state.stats[key] + Number(amount))*10)/10;
+  log((note||key)+' +'+amount);
+  checkLevelUp(key);
+  saveState();
+  updateUI();
+}
+function checkLevelUp(key){
+  // level thresholds every 10 points. When crossing threshold, show sparkle
+  const val = state.stats[key];
+  const lvl = Math.floor(val/10);
+  const prev = (state._levels||{})[key] || 0;
+  if(lvl > prev){
+    // level up
+    state._levels = state._levels || {};
+    state._levels[key] = lvl;
+    // visual effect: flash bar
+    const barEl = document.getElementById('bar-'+key);
+    barEl.style.transition = 'box-shadow 0.4s';
+    barEl.style.boxShadow = '0 0 18px rgba(255,120,180,0.8)';
+    setTimeout(()=> barEl.style.boxShadow = '', 900);
+    log(`★ ${key} が レベルアップ！Lv${lvl}`);
+  }
+}
+
+/* Missions */
+function renderMissions(){
+  const cont = document.getElementById('missionsList');
+  cont.innerHTML = '';
+  state.missions.forEach((m,idx)=>{
+    const div = document.createElement('div'); div.className='mission';
+    div.innerHTML = `<div><b>${m.title}</b><div style="font-size:12px;color:#aa8a9a">${m.minutes}分</div></div>`;
+    const btns = document.createElement('div');
+    const comp = document.createElement('button'); comp.className='small'; comp.textContent = m.done? '完了済':'完了'; comp.disabled = !!m.done;
+    comp.onclick = ()=> { completeMission(idx); };
+    const del = document.createElement('button'); del.className='small'; del.textContent='削除'; del.onclick = ()=> { state.missions.splice(idx,1); saveState(); renderMissions(); };
+    btns.appendChild(comp); btns.appendChild(del);
+    div.appendChild(btns);
+    cont.appendChild(div);
+  });
+}
+function addMission(){
+  const title = document.getElementById('missionTitle').value.trim() || '無題';
+  const minutes = Math.max(1, Number(document.getElementById('missionMinutes').value) || 60);
+  state.missions.push({title, minutes, done:false, id:'m'+Date.now()});
+  saveState(); renderMissions(); log('ミッション追加: '+title);
+}
+function completeMission(idx){
+  const m = state.missions[idx];
+  if(!m || m.done) return;
+  m.done = true;
+  // reward = (minutes/60)*2
+  const raw = (m.minutes/60)*2;
+  const reward = Math.round(raw*10)/10;
+  addStat('study', reward, `ミッション完了: ${m.title}`);
+  saveState(); renderMissions();
+  log(`ミッション完了: ${m.title} +${reward}`);
+}
+
+/* Avatar upload */
+function renderAvatar(){
+  const box = document.getElementById('avatarBox');
+  if(state.avatarDataUrl){
+    box.innerHTML = `<img src="${state.avatarDataUrl}">`;
+  } else {
+    box.innerHTML = '画像を埋め込めます';
+  }
+}
+document.getElementById('avatarUpload').onchange = function(e){
+  const f = e.target.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=> {
+    state.avatarDataUrl = r.result;
+    saveState(); renderAvatar(); log('アバターを設定しました');
+  };
+  r.readAsDataURL(f);
+};
+
+/* Timers with stop/cancel */
+function startStudy(min){
+  const id='study';
+  const now = Date.now();
+  state.timers[id] = {start:now, minutes:min, running:true};
+  saveState(); updateTimersUI(); log(`勉強 ${min}分 開始`);
+  tickTimer(id);
+}
+function stopStudy(){
+  const id='study'; const t = state.timers[id];
+  if(!t || !t.running) return alert('勉強中ではありません');
+  const elapsed = (Date.now() - t.start)/60000;
+  const reward = Math.round((elapsed/60)*10)/10; // proportional, decimal
+  addStat('study', reward, `途中停止 勉強 ${Math.round(elapsed)}分`);
+  t.running=false; saveState(); updateTimersUI();
+  log(`勉強停止: ${Math.round(elapsed)}分、報酬 +${reward}`);
+}
+function cancelStudy(){
+  const id='study'; if(!state.timers[id] || !state.timers[id].running) return alert('勉強中ではありません');
+  state.timers[id].running=false; state.timers[id].cancelled=true; saveState(); updateTimersUI(); log('勉強中止');
+}
+function startExercise(){
+  const id='exercise'; const min=40; const now=Date.now();
+  state.timers[id] = {start:now, minutes:min, running:true};
+  saveState(); updateTimersUI(); log('運動開始 40分'); tickTimer(id);
+}
+function stopExercise(){
+  const id='exercise'; const t=state.timers[id]; if(!t||!t.running) return alert('運動中ではありません');
+  const elapsed=(Date.now()-t.start)/60000; const reward = Math.round((elapsed/40)*10)/10;
+  addStat('exercise', reward, `途中停止 運動 ${Math.round(elapsed)}分`);
+  t.running=false; saveState(); updateTimersUI(); log(`運動停止: ${Math.round(elapsed)}分、報酬 +${reward}`);
+}
+function cancelExercise(){ const id='exercise'; if(!state.timers[id]||!state.timers[id].running) return alert('運動中ではありません'); state.timers[id].running=false; state.timers[id].cancelled=true; saveState(); updateTimersUI(); log('運動中止'); }
+
+function tickTimer(id){
+  const el = document.getElementById(id+'Timer'); if(!el) return; const t = state.timers[id];
+  if(!t||!t.running){ updateTimersUI(); return; }
+  const end = t.start + t.minutes*60000; const rem = end - Date.now();
+  if(rem <= 0){
+    t.running=false;
+    if(id==='study'){ const inc = t.minutes/60; addStat('study', inc, `勉強完了 ${t.minutes}分`); log(`勉強完了 +${inc}`); }
+    if(id==='exercise'){ const inc = t.minutes/40; addStat('exercise', inc, `運動完了 ${t.minutes}分`); log(`運動完了 +${inc}`); }
+    saveState(); updateTimersUI(); return;
+  } else {
+    const m = Math.floor(rem/60000), s = Math.floor((rem%60000)/1000);
+    el.textContent = `実行中 残り ${m}分${s}秒`;
+    setTimeout(()=>tickTimer(id),1000);
+  }
+}
+function updateTimersUI(){ ['study','exercise'].forEach(id=>{ const el=document.getElementById(id+'Timer'); const t=state.timers[id]; if(!t){ if(el) el.textContent='未実行'; return;} if(t.cancelled){ el.textContent='中止'; return;} if(t.running){ const rem=Math.max(0,Math.round((t.start+t.minutes*60000-Date.now())/1000)); const m=Math.floor(rem/60), s=rem%60; el.textContent=`実行中 残り ${m}分${s}秒`; } else { el.textContent='完了 / 停止済'; } }); }
+
+/* Export/Import/Reset */
+from pathlib import Path
+p = Path("/mnt/data/real_app_princess.html")
+p.write_text(html, encoding="utf-8")
